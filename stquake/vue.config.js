@@ -1,7 +1,9 @@
-// vue.config.js
 module.exports = {
-    // options...
-    devServer: {
-        disableHostCheck: true
-    }
+  transpileDependencies: [
+    'vuetify'
+  ],
+  devServer: {
+    disableHostCheck: true
+  }
+  //chainWebpack: config => config.resolve.set('symlinks', false)
 }
