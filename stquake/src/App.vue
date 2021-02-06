@@ -1,8 +1,8 @@
 <template>
-  
-  <div id="map">
-    <MonMap/>
-  </div>
+  <v-app>
+    <MonMap>
+    </MonMap>
+  </v-app>
 
 </template>
 
@@ -43,5 +43,18 @@ html, body {margin: 0; height: 100%; overflow: hidden}
 }
 #map {
   height: 100vh;
+}
+
+.mapboxgl-ctrl-logo, .mapboxgl-ctrl-attrib-inner {
+  height: 0px !important;
+}
+.v-navigation-drawer {
+
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+.v-navigation-drawer__content::-webkit-scrollbar {
+  display: none !important;
 }
 </style>
