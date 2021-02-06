@@ -8,39 +8,21 @@
               :layer="geoJsonLayer"
       />
     </MglMap>
-    <!-- <v-btn rounded color="primary" dark v-on:click="isShow = !isShow" style="position: fixed; top: 5px; left:5px;z-index:1;">
-      <v-icon dark>
-        mdi-format-list-bulleted-square
-      </v-icon>
-    </v-btn>-->
-    <!-- <div id="tl" class="mx-auto"> -->
 
       <v-app-bar-nav-icon style="position: absolute; top:1vh; left:1vh;" dark @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
-      <v-navigation-drawer
-        v-model="drawer"
-        absolute
-        bottom
-        temporary
-        dark
+      <v-navigation-drawer v-model="drawer" absolute bottom temporary dark>
+        <v-list dense>
+          <!-- <v-list-item-group v-model="group" active-class="text--accent-4"> -->
+            <v-list-item v-for="item in timeline_items" :key="item.id" link>
 
-      >
-        <v-list
-          nav
-          dense
-        >
-          <v-list-item-group
-            v-model="group"
-            active-class="deep-purple--text text--accent-4"
-          >
-          <v-list-item v-for="item in timeline_items" v-bind:key="item.id" >
+              <v-list-item-content>
+                <v-list-item-title>{{ item.mag }}{{ item.location }}</v-list-item-title>
+              </v-list-item-content>
+              <!-- <v-divider></v-divider> -->
 
-          <!-- <template v-slot:icon>
-                    <v-btn class="mx-2" fab dark v-bind="item.props" color="blue"></v-btn>
-          </template> -->
-          <a class="white--text">{{ item.location }}</a>
+            </v-list-item>
 
-          </v-list-item>
-          </v-list-item-group>
+          <!-- </v-list-item-group>s -->
         </v-list>
     </v-navigation-drawer>
   </div>
@@ -241,7 +223,8 @@ export default {
               }
               this.timeline_items.push({ id: i+1,
                                           props: mon_component,
-                                          location: this.geoJsonSource.data.features[i].properties.loc });
+                                          location: this.geoJsonSource.data.features[i].properties.loc,
+                                          mag: this.geoJsonSource.data.features[i].properties.mag });
             }
         }, 10);
 

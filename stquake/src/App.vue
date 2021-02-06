@@ -57,4 +57,11 @@ html, body {margin: 0; height: 100%; overflow: hidden}
 .v-navigation-drawer__content::-webkit-scrollbar {
   display: none !important;
 }
+
+.v-list-item__title{
+  justify-content: left;
+  text-align: left;
+  display: grid;
+}
+
 </style>
