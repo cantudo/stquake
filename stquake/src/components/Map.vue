@@ -10,19 +10,28 @@
     </MglMap>
 
       <v-app-bar-nav-icon style="position: absolute; top:1vh; left:1vh;" dark @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
-      <v-navigation-drawer v-model="drawer" absolute bottom temporary dark>
-        <v-list dense>
-          <!-- <v-list-item-group v-model="group" active-class="text--accent-4"> -->
-            <v-list-item v-for="item in timeline_items" :key="item.id" link>
+      <v-navigation-drawer v-model="drawer" absolute bottom temporary dark app ref="quake_bar">
+        <v-list dense >
+            <div  style="height: 100%">
+            <v-virtual-scroll
+                :bench="benched"
+                :items="timeline_items"
+                :height="quake_bar_height"
+                :item-height="40"
+              >
+              <template v-slot:default="{ item }">
+                <v-list-item ripple link v-on:click="goToQuake(item.id)" >
+                  <v-list-item-content>
 
-              <v-list-item-content>
-                <v-list-item-title>{{ item.mag }}{{ item.location }}</v-list-item-title>
-              </v-list-item-content>
-              <!-- <v-divider></v-divider> -->
+                    <v-list-item-title>{{ item.mag }}  {{ item.location }}</v-list-item-title>
+                    
+                    <v-divider></v-divider>
 
-            </v-list-item>
-
-          <!-- </v-list-item-group>s -->
+                  </v-list-item-content>
+                </v-list-item>
+              </template>
+            </v-virtual-scroll>
+            </div>
         </v-list>
     </v-navigation-drawer>
   </div>
@@ -33,6 +42,8 @@ import Mapbox from "mapbox-gl";
 import { MglMap, MglGeojsonLayer } from "vue-mapbox";
 const https = require('https');
 const vm = require('vm');
+
+
 // const concat = require('concat-stream');
 
 export default {
@@ -42,8 +53,10 @@ export default {
   },
   data() {
     return {
-      isShow : false,
+      isActive : false,
       drawer: false,
+      benched: 0,
+      quake_bar_height: 0,
       accessToken: "pk.eyJ1IjoiY2FhYW50dSIsImEiOiJja2twbXhlb2UwZWc5Mm5zMTIyejNsc2g5In0.MCaZ1fA3fCJ9_YXEcFUXJQ", // your access token. Needed if you using Mapbox maps
       mapStyle: "mapbox://styles/mapbox/dark-v10", // your map style
       coordinates: [-3.703790, 40.416775],
@@ -112,6 +125,7 @@ export default {
   },
 
   created() {
+    window.addEventListener("resize", this.handle_navbar_scroller);
     // We need to set mapbox-gl library here in order to use it in template
     this.mapbox = Mapbox;
     this.map = null;
@@ -130,14 +144,25 @@ export default {
         res.dias3.features[i].properties.hover = false;
         res.dias3.features[i].properties.mag = parseFloat(res.dias3.features[i].properties.mag);
       }
-      this.geoJsonSource.data.features = res.dias3.features;
+      this.geoJsonSource.data.features = res.dias30.features;
 
 
     });
 
   },
+  destroyed () {
+    window.addEventListener("resize", this.handle_navbar_scroller);
+  },
 
   methods: {
+      handle_navbar_scroller: function () {
+        try {
+          this.quake_bar_height = this.$refs.quake_bar.$el.clientHeight-10;
+        } catch (e) {
+          console.log(e.message);
+        }
+        return
+      },
       getData: function () {
         return new Promise((resolve, reject) => {
           https.get( 'https://www.ign.es/web/resources/sismologia/tproximos/terremotos.js', function( res ){
@@ -147,10 +172,8 @@ export default {
             res.on('data', (chunk) => {
               output += chunk;
             });
-            // res.pipe(concat({ encoding: 'string' }, function(remoteSrc) {
 
-            //   // mon_context = context;
-            // }));
+
             res.on('end', () => {
               const script = new vm.Script(output);
               script.runInNewContext(context);
@@ -162,8 +185,7 @@ export default {
             });
           });
         });
-        // console.log(mon_context.dias3);
-        // return mon_context.dias3.features;
+
       },
       onMapLoaded(event) {
         // in component
@@ -209,11 +231,12 @@ export default {
           quakeID = null;
         });
 
-        // console.log(this.map.getRenderedFeatures);
-        let interval = setInterval(() => {
-            if (typeof this.geoJsonSource.data.features[0] == 'undefined') return;
-            clearInterval(interval);
-
+        // async wait till geoJson gathered
+        (async() => {
+            // waiting for geoJson
+            while(typeof this.geoJsonSource.data.features[0] == 'undefined') 
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            // geoJson loaded
             for (let i = 0; i < this.geoJsonSource.data.features.length; i++) {
               let mon_component;
               if (this.geoJsonSource.data.features[i].properties.mag > 4) {
@@ -221,13 +244,31 @@ export default {
               } else {
                 mon_component = {"x-small": true};
               }
-              this.timeline_items.push({ id: i+1,
+              this.timeline_items.push({ id: i,
                                           props: mon_component,
                                           location: this.geoJsonSource.data.features[i].properties.loc,
-                                          mag: this.geoJsonSource.data.features[i].properties.mag });
+                                          mag: this.geoJsonSource.data.features[i].properties.mag,
+                                           });
             }
-        }, 10);
+        })();
+ 
+      },
+      
+      goToQuake: function (quake_id) {
+        console.log(quake_id);
+        this.map.flyTo({
+          center: this.geoJsonSource.data.features[quake_id].geometry.coordinates,
+          essential: true, // this animation is considered essential with respect to prefers-reduced-motion,
+          zoom: 15
+        });
+      },
+    },
 
+    mounted () {
+      try {
+        this.quake_bar_height = this.$refs.quake_bar.$el.clientHeight;
+      } catch (e) {
+        console.log(e.message);
       }
     }
 };

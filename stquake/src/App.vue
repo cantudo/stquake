@@ -48,14 +48,33 @@ html, body {margin: 0; height: 100%; overflow: hidden}
 .mapboxgl-ctrl-logo, .mapboxgl-ctrl-attrib-inner {
   height: 0px !important;
 }
-.v-navigation-drawer {
 
+.v-navigation-drawer__content {
+   overflow-y: hidden;
+}
+
+/* .v-navigation-drawer::-webkit-scrollbar {
+  display: none !important;
+} */
+
+/* .v-virtual-scroll {
+  overflow-y: hidden;
   -ms-overflow-style: none !important;
   scrollbar-width: none !important;
 }
 
-.v-navigation-drawer__content::-webkit-scrollbar {
+.v-virtual-scroll::-webkit-scrollbar {
   display: none !important;
+}*/
+
+.v-virtual-scroll {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+.v-virtual-scroll::-webkit-scrollbar {
+  display: none !important;
+  
 }
 
 .v-list-item__title{
