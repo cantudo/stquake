@@ -10,28 +10,57 @@
     </MglMap>
 
       <v-app-bar-nav-icon style="position: absolute; top:1vh; left:1vh;" dark @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
-      <v-navigation-drawer v-model="drawer" absolute bottom temporary dark app ref="quake_bar">
+      <v-navigation-drawer v-model="drawer" absolute bottom temporary dark app ref="quake_bar" width="410">
         <v-list dense >
-            <div  style="height: 100%">
+            <v-divider></v-divider>
+
+            <!-- <div  style="height: 100%"> -->
             <v-virtual-scroll
                 :bench="benched"
                 :items="timeline_items"
                 :height="quake_bar_height"
-                :item-height="40"
+                :item-height="60"
               >
               <template v-slot:default="{ item }">
-                <v-list-item ripple link v-on:click="goToQuake(item.id)" >
+                <v-list-item ripple link v-on:click="goToQuake(item.id)" two-line>
                   <v-list-item-content>
-
-                    <v-list-item-title>{{ item.mag }}  {{ item.location }}</v-list-item-title>
                     
-                    <v-divider></v-divider>
+                    <!-- <v-list-item-title> -->
+                      <v-row >
+
+                        <v-col cols="3">
+                          <!-- <v-row> -->
+                            <a class="text-body-2 white--text" >{{ item.mag }} {{ item.mag_unit }}</a>
+                          <!-- </v-row> -->
+                          <!-- <v-row>
+                            <a class="text-caption" style="opacity: 0;"> stlarx </a>
+                          </v-row> -->
+                        </v-col>
+                        
+                        <v-col cols="7" no-gutters style="margin-top: 5px;">
+                          <v-row>
+                            <a class="text-body-2 white--text font-weight-bold">{{ item.location }}</a>
+                          </v-row>
+                          <v-row >
+                            <a class="text-caption white--text">{{ item.time }}</a>
+                          </v-row>
+                        </v-col>
+
+                        <v-col cols="2" justify="start">
+                          <a class="text-caption white--text">{{ item.depth }}</a>
+                        </v-col>
+
+                      </v-row>
+                    <!-- </v-list-item-title> -->
+                    
 
                   </v-list-item-content>
                 </v-list-item>
+                <v-divider></v-divider>
+
               </template>
             </v-virtual-scroll>
-            </div>
+            <!-- </div> -->
         </v-list>
     </v-navigation-drawer>
   </div>
@@ -55,7 +84,7 @@ export default {
     return {
       isActive : false,
       drawer: false,
-      benched: 0,
+      benched: 2,
       quake_bar_height: 0,
       accessToken: "pk.eyJ1IjoiY2FhYW50dSIsImEiOiJja2twbXhlb2UwZWc5Mm5zMTIyejNsc2g5In0.MCaZ1fA3fCJ9_YXEcFUXJQ", // your access token. Needed if you using Mapbox maps
       mapStyle: "mapbox://styles/mapbox/dark-v10", // your map style
@@ -248,18 +277,20 @@ export default {
                                           props: mon_component,
                                           location: this.geoJsonSource.data.features[i].properties.loc,
                                           mag: this.geoJsonSource.data.features[i].properties.mag,
-                                           });
+                                          mag_unit: this.geoJsonSource.data.features[i].properties.magtype,
+                                          time: this.geoJsonSource.data.features[i].properties.fechalocal,
+                                          depth: (this.geoJsonSource.data.features[i].properties.depth ? this.geoJsonSource.data.features[i].properties.depth.concat(" km") : "")
+                                          });
             }
         })();
  
       },
       
       goToQuake: function (quake_id) {
-        console.log(quake_id);
         this.map.flyTo({
           center: this.geoJsonSource.data.features[quake_id].geometry.coordinates,
           essential: true, // this animation is considered essential with respect to prefers-reduced-motion,
-          zoom: 15
+          zoom: 13
         });
       },
     },
