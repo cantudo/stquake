@@ -11,9 +11,37 @@
 
       <v-app-bar-nav-icon style="position: absolute; top:1vh; left:1vh;" dark @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       <v-navigation-drawer v-model="drawer" absolute bottom temporary dark app ref="quake_bar" width="410">
+        
         <v-list dense >
-            <v-divider></v-divider>
+            <v-list-item  two-line>
+            <v-list-item-content>
+              <v-row no-gutters>
+                <v-col cols="3">
+                  <!-- <v-row> -->
+                    <a class="text-body-2 white--text" >Mag.</a>
+                  <!-- </v-row> -->
+                  <!-- <v-row>
+                    <a class="text-caption" style="opacity: 0;"> stlarx </a>
+                  </v-row> -->
+                </v-col>
+                
+                <v-col cols="7" no-gutters style="margin-top: 5px;">
+                  <v-row>
+                    <a class="text-body-2 white--text font-weight-bold">Location</a>
+                  </v-row>
+                  <v-row >
+                    <a class="text-caption white--text">Time</a>
+                  </v-row>
+                </v-col>
 
+                <v-col cols="2" justify="start">
+                  <a class="text-caption white--text">Depth.</a>
+                </v-col>
+
+              </v-row>
+            </v-list-item-content>
+            </v-list-item>
+            <v-divider style="border-width:5px;"></v-divider>
             <!-- <div  style="height: 100%"> -->
             <v-virtual-scroll
                 :bench="benched"
