@@ -181,7 +181,6 @@ export default {
         'id': 'earthquake-labels',
         'type': 'symbol',
         'source': 'earthquakes',
-        'replaceSource': true,
         // 'minzoom': 5,
         'layout': {
           'text-field': [
