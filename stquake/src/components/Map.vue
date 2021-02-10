@@ -231,7 +231,7 @@ export default {
         // res.dias3.features[i].properties.hover = false;
         res.dias3.features[i].properties.mag = parseFloat(res.dias3.features[i].properties.mag);
       }
-      this.geoJsonSource.data.features = res.dias30.features;
+      this.geoJsonSource.data.features = res.dias10.features;
     });
 
   },
