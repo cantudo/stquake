@@ -285,13 +285,21 @@ export default {
 
 
   methods: {
+      setStyle: function (dark) {
+        (async() => {
+            // waiting for geoJson
+            while( this.map == null ) 
+                await new Promise(resolve => setTimeout(resolve, 100));
+              if (dark) {
+                this.map.setStyle("mapbox://styles/mapbox/dark-v10")
+              } else{
+                this.map.setStyle("mapbox://styles/mapbox/light-v10")
+              }
+        })();
+      },
       toggle_dark_mode: function () {
         this.$vuetify.theme.dark = ! this.$vuetify.theme.dark;
-        if (this.$vuetify.theme.dark) {
-          this.map.setStyle("mapbox://styles/mapbox/dark-v10")
-        } else{
-          this.map.setStyle("mapbox://styles/mapbox/light-v10")
-        }
+        this.setStyle(this.$vuetify.theme.dark);
         localStorage.setItem(
                 "dark_theme",
                 this.$vuetify.theme.dark.toString()
