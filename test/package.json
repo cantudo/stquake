@@ -1,5 +1,5 @@
 {
-  "name": "stquake",
+  "name": "test",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,9 +9,7 @@
   },
   "dependencies": {
     "core-js": "^3.6.5",
-    "mapbox-gl": "^0.53.1",
     "vue": "^2.6.11",
-    "vue-mapbox": "^0.4.1",
     "vuetify": "^2.4.0"
   },
   "devDependencies": {

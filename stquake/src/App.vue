@@ -8,14 +8,11 @@
 
 <script>
 import MonMap from './components/Map'
-
 export default {
   name: 'App',
-
   components: {
     MonMap,
   },
-
   data: () => ({
     //
   }),
@@ -38,55 +35,43 @@ html, body {margin: 0; height: 100%; overflow: hidden}
   color: #2c3e50;
   margin-top: 0px;
   margin-bottom: 0px;
-
 }
-
 #map {
   height: 100vh;
 }
-
 .mapboxgl-ctrl-logo, .mapboxgl-ctrl-attrib-inner {
   height: 0px !important;
 }
-
 .v-navigation-drawer__content {
    overflow-y: hidden;
 }
-
 /* .v-navigation-drawer::-webkit-scrollbar {
   display: none !important;
 } */
-
 /* .v-virtual-scroll {
   overflow-y: hidden;
   -ms-overflow-style: none !important;
   scrollbar-width: none !important;
 }
-
 .v-virtual-scroll::-webkit-scrollbar {
   display: none !important;
 }*/
-
 .v-virtual-scroll {
   -ms-overflow-style: none !important;
   scrollbar-width: none !important;
 }
-
 .v-virtual-scroll::-webkit-scrollbar {
   display: none !important;
   
 }
-
 .v-list-item__title{
   justify-content: left;
   text-align: left;
   display: grid;
 }
-
 * {
     -webkit-tap-highlight-color: rgba(255, 255, 255, 0) !important; 
     -webkit-focus-ring-color: rgba(255, 255, 255, 0) !important; 
     outline: none !important;
 } 
-
 </style>

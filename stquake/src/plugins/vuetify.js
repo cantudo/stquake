@@ -1,8 +1,45 @@
 import Vue from 'vue';
-import Vuetify from 'vuetify/lib';
+import Vuetify, {
+    VNavigationDrawer,
+    VList,
+    VListItem,
+    VRow,
+    VCol,
+    VVirtualScroll,
+    VAppBarNavIcon,
+    VBtn,
+    VIcon,
+  } from 'vuetify/lib';
+import { Ripple } from 'vuetify/lib/directives';
+import colors from 'vuetify/lib/util/colors';
 
-Vue.use(Vuetify)
+Vue.use(Vuetify, {
+    components: {
+        VNavigationDrawer,
+        VList,
+        VListItem,
+        VRow,
+        VCol,
+        VVirtualScroll,
+        VAppBarNavIcon,
+        VBtn,
+        VIcon,
+     },
+    directives: {
+        Ripple,
+    },
+});
 
-const opts = {}
-
-export default new Vuetify(opts)
+export default new Vuetify({
+    theme: {
+        themes: {
+          dark: {
+            primary: '#ffffff'
+          },
+          light: {
+            primary: colors.grey.darken3,
+            secondary: colors.grey.lighten1
+          }
+        }
+      }
+});

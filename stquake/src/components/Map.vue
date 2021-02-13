@@ -87,7 +87,6 @@
 
               </template>
             </v-virtual-scroll>
-            <!-- </div> -->
         </v-list>
     </v-navigation-drawer>
     <v-btn icon style="position: absolute; top:95vh; left:1vh;" v-on:click="toggle_dark_mode">
