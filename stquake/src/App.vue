@@ -39,12 +39,14 @@ html, body {margin: 0; height: 100%; overflow: hidden}
 #map {
   height: 100vh;
 }
-.mapboxgl-ctrl-logo, .mapboxgl-ctrl-attrib-inner {
+.mapboxgl-ctrl-logo, .mapboxgl-ctrl-attrib{
   height: 0px !important;
+  visibility: hidden !important;
 }
 .v-navigation-drawer__content {
    overflow-y: hidden;
 }
+
 /* .v-navigation-drawer::-webkit-scrollbar {
   display: none !important;
 } */

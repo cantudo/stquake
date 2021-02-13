@@ -34,11 +34,12 @@ export default new Vuetify({
     theme: {
         themes: {
           dark: {
-            primary: '#ffffff'
+            primary: '#ffffff',
           },
           light: {
             primary: colors.grey.darken3,
-            secondary: colors.grey.lighten1
+            secondary: colors.grey.lighten4,
+            accent: '#82ff84'
           }
         }
       }

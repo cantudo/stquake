@@ -16,10 +16,10 @@
     </MglMap>
 
       <v-app-bar-nav-icon style="position: absolute; top:1vh; left:1vh;" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
-      <v-navigation-drawer v-model="drawer" absolute bottom temporary app ref="quake_bar" :width="drawer_width">
+      <v-navigation-drawer color="secondary" v-model="drawer" absolute bottom temporary app ref="quake_bar" :width="drawer_width">
         
-        <v-list dense >
-            <v-list-item style="margin-bottom: 5px; margin-top: -2px;">
+        <v-list dense>
+            <v-list-item style="margin-bottom: 5px; margin-top: -2px;" >
             <v-list-item-content>
               <v-row>
                 <v-col cols="1">
@@ -58,15 +58,15 @@
                   <v-list-item-content>
                     
                       <v-row>
-                        <v-col cols="1">
+                        <v-col tile cols="1">
                             <v-icon :color="item.color">mdi-circle</v-icon>
                         </v-col>
 
-                        <v-col cols="3">
+                        <v-col tile cols="3">
                             <a class="text-body-2 " >{{ item.mag }} {{ item.mag_unit }}</a>
                         </v-col>
                         
-                        <v-col cols="5"  style="margin-top: 5px; margin-bottom: 5px;">
+                        <v-col tile cols="5"  style="margin-top: 5px; margin-bottom: 5px;">
                           <v-row>
                             <a class="text-body-2  font-weight-bold">{{ item.location }}</a>
                           </v-row>
@@ -75,7 +75,7 @@
                           </v-row>
                         </v-col>
 
-                        <v-col cols="3" justify="end">
+                        <v-col tile cols="3" justify="end">
                           <a class="text-caption ">{{ item.depth }}</a>
                         </v-col>
 
@@ -89,7 +89,7 @@
             </v-virtual-scroll>
         </v-list>
     </v-navigation-drawer>
-    <v-btn icon style="position: absolute; top:95vh; left:1vh;" v-on:click="toggle_dark_mode">
+    <v-btn icon style="position: absolute; bottom:1vh; left:1vh;" v-on:click="toggle_dark_mode">
     <v-icon dark>mdi-theme-light-dark</v-icon>
     </v-btn>
   </div>
@@ -180,9 +180,12 @@ export default {
               6.5, 11,
               8.5, 12,
               10.5, 13
-            ],
-            
-          ]},
+            ],            
+          ],
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#000',
+          'circle-stroke-opacity': 0.2
+          },
       },
       quakeTextLayer: {
         'id': 'earthquake-labels',
@@ -272,7 +275,6 @@ export default {
       immediate: true,
       handler: function (selectedStyle) {
                 this.$vuetify.theme.dark = (selectedStyle == "mapbox://styles/mapbox/dark-v10");
-                console.log(this.$vuetify.theme.dark);
                 localStorage.setItem(
                     "dark_theme",
                     this.$vuetify.theme.dark.toString()
