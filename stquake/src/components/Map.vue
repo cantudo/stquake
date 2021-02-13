@@ -295,6 +295,7 @@ export default {
               } else{
                 this.map.setStyle("mapbox://styles/mapbox/light-v10")
               }
+              this.$vuetify.theme.dark = dark;
         })();
       },
       toggle_dark_mode: function () {
