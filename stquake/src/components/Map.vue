@@ -1,6 +1,6 @@
 <template>
   <div id="map">
-    <MglMap container="map" :accessToken="accessToken" :mapStyle.sync="mapStyle" @load="onMapLoaded" :center="coordinates" :zoom="defZoom">
+    <MglMap container="map" :accessToken="accessToken" :mapStyle.sync="mapStyle" @load="onMapLoaded" :center="coordinates" :zoom="defZoom" :maxBounds="bounds">
       <MglGeojsonLayer
               :sourceId="geoJsonSource.data.id"
               :source="geoJsonSource"
@@ -15,8 +15,8 @@
       />
     </MglMap>
 
-      <v-app-bar-nav-icon style="position: absolute; top:1vh; left:1vh;" dark @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
-      <v-navigation-drawer v-model="drawer" absolute bottom temporary dark app ref="quake_bar" :width="drawer_width">
+      <v-app-bar-nav-icon style="position: absolute; top:1vh; left:1vh;" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+      <v-navigation-drawer v-model="drawer" absolute bottom temporary app ref="quake_bar" :width="drawer_width">
         
         <v-list dense >
             <v-list-item style="margin-bottom: 5px; margin-top: -2px;">
@@ -26,20 +26,20 @@
                   <v-spacer></v-spacer>
                 </v-col>
                 <v-col cols="2">
-                    <a class="text-body-2 white--text" > Mag.</a>
+                    <a class="text-body-2 " > Mag.</a>
                 </v-col>
                 
                 <v-col cols="6" style="margin-top: 5px;">
                   <v-row>
-                    <a class="text-body-2 white--text font-weight-bold">Location</a>
+                    <a class="text-body-2  font-weight-bold">Location</a>
                   </v-row>
                   <v-row >
-                    <a class="text-caption white--text">Time</a>
+                    <a class="text-caption ">Time</a>
                   </v-row>
                 </v-col>
 
                 <v-col cols="3" justify="center">
-                  <a class="text-caption white--text">Depth.</a>
+                  <a class="text-caption">Depth.</a>
                 </v-col>
 
               </v-row>
@@ -62,21 +62,21 @@
                             <v-icon :color="item.color">mdi-circle</v-icon>
                         </v-col>
 
-                        <v-col cols="2">
-                            <a class="text-body-2 white--text" >{{ item.mag }} {{ item.mag_unit }}</a>
+                        <v-col cols="3">
+                            <a class="text-body-2 " >{{ item.mag }} {{ item.mag_unit }}</a>
                         </v-col>
                         
-                        <v-col cols="6"  style="margin-top: 5px; margin-bottom: 5px;">
+                        <v-col cols="5"  style="margin-top: 5px; margin-bottom: 5px;">
                           <v-row>
-                            <a class="text-body-2 white--text font-weight-bold">{{ item.location }}</a>
+                            <a class="text-body-2  font-weight-bold">{{ item.location }}</a>
                           </v-row>
                           <v-row >
-                            <a class="text-caption white--text">{{ item.time }}</a>
+                            <a class="text-caption ">{{ item.time }}</a>
                           </v-row>
                         </v-col>
 
                         <v-col cols="3" justify="end">
-                          <a class="text-caption white--text">{{ item.depth }}</a>
+                          <a class="text-caption ">{{ item.depth }}</a>
                         </v-col>
 
                       </v-row>                    
@@ -90,6 +90,9 @@
             <!-- </div> -->
         </v-list>
     </v-navigation-drawer>
+    <v-btn icon style="position: absolute; top:95vh; left:1vh;" v-on:click="toggle_dark_mode">
+    <v-icon dark>mdi-theme-light-dark</v-icon>
+    </v-btn>
   </div>
 </template>
 
@@ -109,15 +112,20 @@ export default {
   },
   data() {
     return {
+      isdark:false,
       isActive : false,
       drawer: false,
       drawer_width: 450,
       benched: 2,
       quake_bar_height: 0,
       accessToken: "pk.eyJ1IjoiY2FhYW50dSIsImEiOiJja2twbXhlb2UwZWc5Mm5zMTIyejNsc2g5In0.MCaZ1fA3fCJ9_YXEcFUXJQ", // your access token. Needed if you using Mapbox maps
-      mapStyle: "mapbox://styles/mapbox/dark-v10", // your map style
+      // mapStyle: "", // your map style
       coordinates: [-3.703790, 40.416775],
       defZoom: 5,
+      bounds: [
+        [-35.32, 20.70],
+        [18.41, 50.05]
+      ],
       geoJsonSource: {
         type: 'geojson',
         generateId: true,
@@ -160,21 +168,21 @@ export default {
               false
             ],
             30,
-            // [
-            //   'interpolate', ['linear'],
-            //   ['to-number', ['get', 'mag']],
-            //   1, 8,
-            //   1.5, 10,
-            //   2, 12,
-            //   2.5, 14,
-            //   3, 16,
-            //   3.5, 18,
-            //   4.5, 20,
-            //   6.5, 22,
-            //   8.5, 24,
-            //   10.5, 26
-            // ],
-            5
+            [
+              'interpolate', ['linear'],
+              ['to-number', ['get', 'mag']],
+              1, 4,
+              1.5, 5,
+              2, 6,
+              2.5, 7,
+              3, 8,
+              3.5, 9,
+              4.5, 10,
+              6.5, 11,
+              8.5, 12,
+              10.5, 13
+            ],
+            
           ]},
       },
       quakeTextLayer: {
@@ -260,10 +268,35 @@ export default {
               duration: 400 // In ms, CSS transition duration property for the sidebar matches this value
             });
         })();
-      },
+    },
+    mapStyle:{
+      immediate: true,
+      handler: function (selectedStyle) {
+                this.$vuetify.theme.dark = (selectedStyle == "mapbox://styles/mapbox/dark-v10");
+                console.log(this.$vuetify.theme.dark);
+                localStorage.setItem(
+                    "dark_theme",
+                    this.$vuetify.theme.dark.toString()
+                );
+              }
+    }
   },
 
+
   methods: {
+      toggle_dark_mode: function () {
+        this.$vuetify.theme.dark = ! this.$vuetify.theme.dark;
+        if (this.$vuetify.theme.dark) {
+          this.map.setStyle("mapbox://styles/mapbox/dark-v10")
+        } else{
+          this.map.setStyle("mapbox://styles/mapbox/light-v10")
+        }
+        localStorage.setItem(
+                "dark_theme",
+                this.$vuetify.theme.dark.toString()
+        );
+        return;
+      },
       handle_navbar_scroller: function () {
         try {
           this.quake_bar_height = this.$refs.quake_bar.$el.clientHeight-10;
@@ -328,6 +361,7 @@ export default {
           }
         });
 
+
         this.map.on("mouseleave", "earthquakes-viz", () => {
           if (quakeID) {
             this.map.setFeatureState({
@@ -339,6 +373,19 @@ export default {
           }
 
           quakeID = null;
+        });
+
+        this.map.on("styledata", () => {
+          try {
+            this.map.addSource('earthquakes', {
+              type:'geojson',
+              generateId: true,
+              data: this.geoJsonSource.data});
+            this.map.addLayer(this.geoJsonLayer);
+            this.map.addLayer(this.quakeTextLayer);
+          } catch (e) {
+            console.log('')
+          }
         });
 
         // async wait till geoJson gathered
@@ -425,10 +472,6 @@ export default {
         let green = interpolate_number(parseInt('0x' + (from.slice(5,7))), parseInt('0x' + (to.slice(5,7))), percent);
         return  '#' + Math.floor(red).toString(16) + Math.floor(blue).toString(16) + Math.floor(green).toString(16);
 
-
-        // console.log(colors);
-        // console.log(mag);
-        // return null;
       }
     },
 
@@ -439,6 +482,30 @@ export default {
         console.log(e.message);
       }
     },
+
+    computed: {
+      mapStyle: function () {
+        const theme = localStorage.getItem("dark_theme");
+
+        let dark_theme;
+        let mapStyle;
+        if (theme) {
+            dark_theme = (theme === "true");
+        } else{
+            dark_theme = (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+            localStorage.setItem(
+                "dark_theme",
+                dark_theme.toString()
+            );
+        }
+        if (dark_theme) {
+          mapStyle = "mapbox://styles/mapbox/dark-v10";
+        } else{
+          mapStyle = "mapbox://styles/mapbox/light-v10";
+        }
+        return mapStyle;
+      },
+    } 
 };
 
 
