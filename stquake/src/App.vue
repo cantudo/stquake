@@ -17,17 +17,22 @@ export default {
     //
   }),
 };
+
+const appHeight = () => document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`)
+window.addEventListener('resize', appHeight)
+appHeight()
+
 </script>
 <style>
 .mapboxgl-canvas {
   position: absolute;
-  width: 600px; 
-  height: 300px;
+  height: var(--app-height);
+
  }
 </style>
 
 <style>
-html, body {margin: 0; height: 100%; overflow: hidden}
+html, body {margin: 0;   height: var(--app-height); overflow: hidden}
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -37,7 +42,7 @@ html, body {margin: 0; height: 100%; overflow: hidden}
   margin-bottom: 0px;
 }
 #map {
-  height: 100vh;
+  height: var(--app-height);
 }
 .mapboxgl-ctrl-logo, .mapboxgl-ctrl-attrib{
   height: 0px !important;

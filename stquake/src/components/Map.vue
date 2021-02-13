@@ -14,8 +14,10 @@
               :layer="quakeTextLayer"
       />
     </MglMap>
-
-      <v-app-bar-nav-icon style="position: absolute; top:1vh; left:1vh;" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+      <v-btn icon v-on:click="toggle_dark_mode" style="position: fixed; bottom:1%; left:1%;">
+        <v-icon  dark>mdi-theme-light-dark</v-icon>
+       </v-btn>
+      <v-app-bar-nav-icon style="position: absolute; top:1%; left:1%;" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       <v-navigation-drawer color="secondary" v-model="drawer" absolute bottom temporary app ref="quake_bar" :width="drawer_width">
         
         <v-list dense>
@@ -89,9 +91,7 @@
             </v-virtual-scroll>
         </v-list>
     </v-navigation-drawer>
-    <v-btn icon style="position: absolute; bottom:1vh; left:1vh;" v-on:click="toggle_dark_mode">
-    <v-icon dark>mdi-theme-light-dark</v-icon>
-    </v-btn>
+
   </div>
 </template>
 
@@ -107,7 +107,7 @@ const vm = require('vm');
 export default {
   components: {
     MglMap,
-    MglGeojsonLayer
+    MglGeojsonLayer,
   },
   data() {
     return {
@@ -224,6 +224,7 @@ export default {
   },
 
   created() {
+
     window.addEventListener("resize", this.handle_navbar_scroller);
     // We need to set mapbox-gl library here in order to use it in template
     this.mapbox = Mapbox;
@@ -250,7 +251,9 @@ export default {
   // },
 
   watch: {
-    drawer: function () {
+    drawer: {
+      immediate: true,
+      handler: function () {
         let padding;
         if (this.drawer) {
           if(this.$refs.quake_bar.$el.classList[4] == "v-navigation-drawer--is-mobile") {
@@ -270,15 +273,12 @@ export default {
               duration: 400 // In ms, CSS transition duration property for the sidebar matches this value
             });
         })();
+      }
     },
     mapStyle:{
       immediate: true,
       handler: function (selectedStyle) {
                 this.$vuetify.theme.dark = (selectedStyle == "mapbox://styles/mapbox/dark-v10");
-                localStorage.setItem(
-                    "dark_theme",
-                    this.$vuetify.theme.dark.toString()
-                );
               }
     }
   },
@@ -296,15 +296,15 @@ export default {
                 this.map.setStyle("mapbox://styles/mapbox/light-v10")
               }
               this.$vuetify.theme.dark = dark;
+                localStorage.setItem(
+                "dark_theme",
+                this.$vuetify.theme.dark.toString()
+              );
         })();
       },
       toggle_dark_mode: function () {
         this.$vuetify.theme.dark = ! this.$vuetify.theme.dark;
         this.setStyle(this.$vuetify.theme.dark);
-        localStorage.setItem(
-                "dark_theme",
-                this.$vuetify.theme.dark.toString()
-        );
         return;
       },
       handle_navbar_scroller: function () {
@@ -342,7 +342,7 @@ export default {
       onMapLoaded(event) {
         // in component
         this.map = event.map;
- 
+        // console.log(this.map);
         let quakeID = null;
         this.map.on('mousemove', 'earthquakes-viz', (e) => {
           this.map.getCanvas().style.cursor = 'pointer';
@@ -503,10 +503,6 @@ export default {
             dark_theme = (theme === "true");
         } else{
             dark_theme = (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
-            localStorage.setItem(
-                "dark_theme",
-                dark_theme.toString()
-            );
         }
         if (dark_theme) {
           mapStyle = "mapbox://styles/mapbox/dark-v10";
