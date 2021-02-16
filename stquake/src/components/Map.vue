@@ -1,5 +1,6 @@
 <template>
   <div id="map">
+
     <MglMap container="map" :accessToken="accessToken" :mapStyle.sync="mapStyle" @load="onMapLoaded" :center="coordinates" :zoom="defZoom" :maxBounds="bounds">
       <MglGeojsonLayer
               :sourceId="geoJsonSource.data.id"
@@ -13,11 +14,72 @@
               layerId="earthquake-labels"
               :layer="quakeTextLayer"
       />
+     
     </MglMap>
       <v-btn icon v-on:click="toggle_dark_mode" style="position: fixed; bottom:1%; left:1%;">
-        <v-icon  dark>mdi-theme-light-dark</v-icon>
-       </v-btn>
-      <v-app-bar-nav-icon style="position: absolute; top:1%; left:1%;" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+        <v-icon>mdi-theme-light-dark</v-icon>
+      </v-btn>
+      <v-dialog max-width="800">
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn icon v-bind="attrs" v-on="on" style="position: fixed; top:1%; right:1%;">
+            <v-icon>mdi-cog</v-icon>
+          </v-btn>
+        </template>
+        <template>
+          <v-card style="min-height:100px; overflow: hidden;">
+            <v-subheader>Magnitude filter</v-subheader>
+
+            <div  class="mx-auto">
+
+                <v-row>
+                  <v-col class="px-4">
+                    <v-range-slider
+                      v-model="filterMag"
+                      step="0.1"
+                      :max="11"
+                      :min="0"
+                      hide-details
+                      class="align-center"
+                    >
+                      <template v-slot:prepend>
+                        <v-text-field
+                          :value="filterMag[0]"
+                          class="mt-0 pt-0"
+                          hide-details
+                          single-line
+                          type="number"
+                          style="width: 30px"
+                          @change="$set(filterMag, 0, $event)"
+                        ></v-text-field>
+                      </template>
+                      <template v-slot:append>
+                        <v-text-field
+                          :value="filterMag[1]"
+                          class="mt-0 pt-0"
+                          hide-details
+                          single-line
+                          type="number"
+                          style="width: 30px"
+                          @change="$set(filterMag, 1, $event)"
+                        ></v-text-field>
+                      </template>`
+                    </v-range-slider>
+                  </v-col>
+                </v-row>
+            </div>
+              
+              <!-- <v-card-actions class="justify-end">
+                <v-btn
+                  text
+                  @click="dialog.value = false"
+                >Close</v-btn>
+              </v-card-actions> -->
+          </v-card>
+        </template>
+      </v-dialog>
+
+
+      <v-app-bar-nav-icon style="position: fixed; top:1%; left:1%;" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       <v-navigation-drawer color="secondary" v-model="drawer" absolute bottom temporary app ref="quake_bar" :width="drawer_width">
         
         <v-list dense>
@@ -96,7 +158,7 @@
 </template>
 
 <script>
-import Mapbox from "mapbox-gl";
+//import Mapbox from "mapbox-gl";
 import { MglMap, MglGeojsonLayer } from "vue-mapbox";
 const https = require('https');
 const vm = require('vm');
@@ -111,6 +173,7 @@ export default {
   },
   data() {
     return {
+      filterMag: [0,5],
       isdark:false,
       isActive : false,
       drawer: false,
@@ -138,6 +201,9 @@ export default {
         id: "earthquakes-viz",
         source: "earthquakes",
         type: "circle",
+        layout: {
+          'circle-sort-key': ['to-number', ['get', 'mag']]
+        },
         paint: {
           'circle-color': [
             'case',
@@ -184,7 +250,8 @@ export default {
           ],
           'circle-stroke-width': 2,
           'circle-stroke-color': '#000',
-          'circle-stroke-opacity': 0.2
+          'circle-stroke-opacity': 0.2,
+          'circle-opacity': 1
           },
       },
       quakeTextLayer: {
@@ -227,21 +294,26 @@ export default {
 
     window.addEventListener("resize", this.handle_navbar_scroller);
     // We need to set mapbox-gl library here in order to use it in template
-    this.mapbox = Mapbox;
-    this.map = null;
+    import('mapbox-gl').then((module) => {
+      this.mapbox = module.Mapbox; 
+    });    this.map = null;
     this.getData().then((res) => {
       for (let i = 0; i < res.dias30.features.length; i++) {
         // res.dias30.features[i].properties.hover = false;
+        // res.dias30.features[i].properties.display = true;
         res.dias30.features[i].properties.mag = parseFloat(res.dias30.features[i].properties.mag);
       }
       for (let i = 0; i < res.dias10.features.length; i++) {
-        // res.dias10.features[i].properties.hover = false;
+        // res.dias10.features[i].properties.hover = true;
+        // res.dias10.features[i].properties.display = true;
         res.dias10.features[i].properties.mag = parseFloat(res.dias10.features[i].properties.mag);
       }
       for (let i = 0; i < res.dias3.features.length; i++) {
         // res.dias3.features[i].properties.hover = false;
+        // res.dias3.features[i].properties.display = true;
         res.dias3.features[i].properties.mag = parseFloat(res.dias3.features[i].properties.mag);
       }
+      this.all_features = res.dias10.features;
       this.geoJsonSource.data.features = res.dias10.features;
     });
 
@@ -280,7 +352,18 @@ export default {
       handler: function (selectedStyle) {
                 this.$vuetify.theme.dark = (selectedStyle == "mapbox://styles/mapbox/dark-v10");
               }
-    }
+    },
+    filterMag: {
+      handler: function () {
+        try {
+          let aux_feat = this.all_features.filter(feature => feature.properties.mag >= this.filterMag[0]
+                                                              && feature.properties.mag <= this.filterMag[1]); 
+          this.geoJsonSource.data.features = aux_feat;
+          // console.log(this.geoJsonSource.data.features);
+          // this.map.getSource('earthquakes').setData(this.geoJsonSource.data);
+        } catch(e) {console.log(e);}
+      }
+    },
   },
 
 
@@ -343,19 +426,20 @@ export default {
         // in component
         this.map = event.map;
         // console.log(this.map);
-        let quakeID = null;
+        this.quakeID = null;
         this.map.on('mousemove', 'earthquakes-viz', (e) => {
           this.map.getCanvas().style.cursor = 'pointer';
 
           if (e.features.length > 0) {
-            if (quakeID) {
+
+            if (this.quakeID != null) {
               this.map.removeFeatureState({
                 source: "earthquakes",
-                id: quakeID
+                id: this.quakeID
               });
             }
             // console.log(e.features)
-            quakeID = e.features[0].id;
+            this.quakeID = e.features[0].id;
             // console.log(this.map.querySourceFeatures('earthquakes', {
             //   sourceLayer: 'earthquakes-viz'})
             // );
@@ -363,7 +447,7 @@ export default {
             // feature state for the feature under the mouse
             this.map.setFeatureState({
               source: 'earthquakes',
-              id: quakeID,
+              id: this.quakeID,
             }, {
               hover: true
             });
@@ -373,29 +457,31 @@ export default {
 
 
         this.map.on("mouseleave", "earthquakes-viz", () => {
-          if (quakeID) {
+          if (this.quakeID != null) {
             this.map.setFeatureState({
               source: 'earthquakes',
-              id: quakeID
+              id: this.quakeID
             }, {
               hover: false
             });
           }
 
-          quakeID = null;
+          this.quakeID = null;
         });
-
-        this.map.on("styledata", () => {
+        this.map.on("style.load", () => {
+          console.log('hey');
           try {
-            this.map.addSource('earthquakes', {
-              type:'geojson',
-              generateId: true,
-              data: this.geoJsonSource.data});
-            this.map.addLayer(this.geoJsonLayer);
-            this.map.addLayer(this.quakeTextLayer);
-          } catch (e) {
-            console.log('')
-          }
+
+              this.map.addSource('earthquakes', {
+                type:'geojson',
+                generateId: true,
+                data: this.geoJsonSource.data});
+              this.map.addLayer(this.geoJsonLayer);
+              this.map.addLayer(this.quakeTextLayer);
+            } catch (e) {
+              console.log(e)
+            }
+          
         });
 
         // async wait till geoJson gathered
@@ -428,13 +514,11 @@ export default {
       },
       
       goToQuake: function (quake_id) {
-        if (this.previous_selected != null) {
-          this.map.removeFeatureState({
+        this.map.removeFeatureState({
               source: 'earthquakes',
-              id: this.previous_selected
+              id: this.quakeID
           });
-        }
-        this.previous_selected = quake_id;
+        this.quakeID = quake_id;
         this.map.setFeatureState({
               source: 'earthquakes',
               id: quake_id
