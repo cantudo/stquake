@@ -10,19 +10,19 @@
       />
       <MglGeojsonLayer
               :sourceId="geoJsonSource.data.id"
-              :source="geoJsonSource"
+              :source="geoJsonLabelsSource"
               layerId="earthquake-labels"
               :layer="quakeTextLayer"
       />
      
     </MglMap>
       <v-btn icon v-on:click="toggle_dark_mode" style="position: fixed; bottom:1%; left:1%;">
-        <v-icon>mdi-theme-light-dark</v-icon>
+        <v-icon>{{ icons.mdiThemeLightDark }}</v-icon>
       </v-btn>
       <v-dialog max-width="800">
         <template v-slot:activator="{ on, attrs }">
           <v-btn icon v-bind="attrs" v-on="on" style="position: fixed; top:1%; right:1%;">
-            <v-icon>mdi-cog</v-icon>
+            <v-icon>{{ icons.mdiCog }}</v-icon>
           </v-btn>
         </template>
         <template>
@@ -79,7 +79,11 @@
       </v-dialog>
 
 
-      <v-app-bar-nav-icon style="position: fixed; top:1%; left:1%;" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+      <v-btn icon style="position: fixed; top:1%; left:1%;" @click.stop="drawer = !drawer">
+        <v-icon>
+          {{ icons.mdiMenu }}
+        </v-icon>
+      </v-btn>
       <v-navigation-drawer color="secondary" v-model="drawer" absolute bottom temporary app ref="quake_bar" :width="drawer_width">
         
         <v-list dense>
@@ -89,11 +93,11 @@
                 <v-col cols="1">
                   <v-spacer></v-spacer>
                 </v-col>
-                <v-col cols="2">
+                <v-col cols="3">
                     <a class="text-body-2 " > Mag.</a>
                 </v-col>
                 
-                <v-col cols="6" style="margin-top: 5px;">
+                <v-col cols="5" style="margin-top: 5px;">
                   <v-row>
                     <a class="text-body-2  font-weight-bold">Location</a>
                   </v-row>
@@ -113,34 +117,34 @@
 
             <v-virtual-scroll
                 :bench="benched"
-                :items="timeline_items"
+                :items="geoJsonSource.data.features"
                 :height="quake_bar_height"
                 :item-height="60"
               >
               <template v-slot:default="{ item }">
-                <v-list-item ripple link v-on:click="goToQuake(item.id)" two-line>
+                <v-list-item ripple link v-on:click="goToQuake(item.properties.id)" two-line>
                   <v-list-item-content>
                     
                       <v-row>
                         <v-col tile cols="1">
-                            <v-icon :color="item.color">mdi-circle</v-icon>
+                            <v-icon :color="item.properties.color">{{ icons.mdiCircle }}</v-icon>
                         </v-col>
 
                         <v-col tile cols="3">
-                            <a class="text-body-2 " >{{ item.mag }} {{ item.mag_unit }}</a>
+                            <a class="text-body-2 " >{{ item.properties.mag }} {{ item.properties.magtype }}</a>
                         </v-col>
                         
                         <v-col tile cols="5"  style="margin-top: 5px; margin-bottom: 5px;">
                           <v-row>
-                            <a class="text-body-2  font-weight-bold">{{ item.location }}</a>
+                            <a class="text-body-2  font-weight-bold">{{ item.properties.loc }}</a>
                           </v-row>
                           <v-row >
-                            <a class="text-caption ">{{ item.time }}</a>
+                            <a class="text-caption ">{{ item.properties.fechalocal }}</a>
                           </v-row>
                         </v-col>
 
                         <v-col tile cols="3" justify="end">
-                          <a class="text-caption ">{{ item.depth }}</a>
+                          <a class="text-caption ">{{ item.properties.depth ? item.properties.depth.concat(" km") : "" }}</a>
                         </v-col>
 
                       </v-row>                    
@@ -160,6 +164,7 @@
 <script>
 //import Mapbox from "mapbox-gl";
 import { MglMap, MglGeojsonLayer } from "vue-mapbox";
+import { mdiThemeLightDark, mdiCog, mdiCircle, mdiMenu  } from "@mdi/js";
 const https = require('https');
 const vm = require('vm');
 
@@ -173,12 +178,18 @@ export default {
   },
   data() {
     return {
+      icons: {
+        mdiThemeLightDark,
+        mdiCog,
+        mdiCircle,
+        mdiMenu
+      },
       filterMag: [0,5],
       isdark:false,
       isActive : false,
       drawer: false,
       drawer_width: 450,
-      benched: 2,
+      benched: 0,
       quake_bar_height: 0,
       accessToken: "pk.eyJ1IjoiY2FhYW50dSIsImEiOiJja2twbXhlb2UwZWc5Mm5zMTIyejNsc2g5In0.MCaZ1fA3fCJ9_YXEcFUXJQ", // your access token. Needed if you using Mapbox maps
       // mapStyle: "", // your map style
@@ -193,6 +204,15 @@ export default {
         generateId: true,
         data: {
           id: "earthquakes",
+          type: "FeatureCollection",
+          features: []
+        }
+      },
+      geoJsonLabelsSource: {
+        type: 'geojson',
+        generateId: true,
+        data: {
+          id: "earthquakes-labels-source",
           type: "FeatureCollection",
           features: []
         }
@@ -257,7 +277,7 @@ export default {
       quakeTextLayer: {
         'id': 'earthquake-labels',
         'type': 'symbol',
-        'source': 'earthquakes',
+        // 'source': 'earthquakes-labels-source',
         // 'minzoom': 5,
         'layout': {
           'text-field': [
@@ -270,7 +290,8 @@ export default {
             'Arial Unicode MS Bold'
             ],
           'text-size': 20,
-          'text-allow-overlap': true
+          'text-allow-overlap': true,
+          'visibility':  'visible'
         },
         // 'text-anchor': 'top',
         'paint': {
@@ -315,6 +336,10 @@ export default {
       }
       this.all_features = res.dias10.features;
       this.geoJsonSource.data.features = res.dias10.features;
+      for (let i = 0; i < this.geoJsonSource.data.features.length; i++) {
+        this.geoJsonSource.data.features[i].properties.id = i;
+        this.geoJsonSource.data.features[i].properties.color = this.interpolate_colors(this.geoJsonSource.data.features[i].properties.mag);
+      }
     });
 
   },
@@ -400,7 +425,7 @@ export default {
       },
       getData: function () {
         return new Promise((resolve, reject) => {
-          https.get( 'https://www.ign.es/web/resources/sismologia/tproximos/terremotos.js', function( res ){
+          https.get( 'https://quake.stlarx.com/terremotos.js', function( res ){
             let context = {};
             let output = '';
             res.setEncoding('ascii');
@@ -451,6 +476,7 @@ export default {
             }, {
               hover: true
             });
+            this.geoJsonLabelsSource.data.features[0] = this.all_features[this.quake_id];
 
           }
         });
@@ -464,6 +490,7 @@ export default {
             }, {
               hover: false
             });
+            this.geoJsonLabelsSource.data.features[0] = null;
           }
 
           this.quakeID = null;
@@ -485,31 +512,33 @@ export default {
         });
 
         // async wait till geoJson gathered
-        (async() => {
-            // waiting for geoJson
-            while(typeof this.geoJsonSource.data.features[0] == 'undefined') 
-                await new Promise(resolve => setTimeout(resolve, 100));
-            // geoJson loaded
+        // (async() => {
+        //     // waiting for geoJson
+        //     while(typeof this.geoJsonSource.data.features[0] == 'undefined') 
+        //         await new Promise(resolve => setTimeout(resolve, 100));
+        //     // geoJson loaded
 
-            let mon_component;
-            for (let i = 0; i < this.geoJsonSource.data.features.length; i++) {
+        //     // let mon_component;
+        //     for (let i = 0; i < this.geoJsonSource.data.features.length; i++) {
               
-              if (this.geoJsonSource.data.features[i].properties.mag > 4) {
-                mon_component = {"x-small": false};
-              } else {
-                mon_component = {"x-small": true};
-              }
-              this.timeline_items.push({ id: i,
-                                          props: mon_component,
-                                          location: this.geoJsonSource.data.features[i].properties.loc,
-                                          mag: this.geoJsonSource.data.features[i].properties.mag,
-                                          mag_unit: this.geoJsonSource.data.features[i].properties.magtype,
-                                          time: this.geoJsonSource.data.features[i].properties.fechalocal,
-                                          depth: (this.geoJsonSource.data.features[i].properties.depth ? this.geoJsonSource.data.features[i].properties.depth.concat(" km") : ""),
-                                          color: this.interpolate_colors(parseFloat(this.geoJsonSource.data.features[i].properties.mag))
-                                          });
-            }
-        })();
+        //       // if (this.geoJsonSource.data.features[i].properties.mag > 4) {
+        //       //   mon_component = {"x-small": false};
+        //       // } else {
+        //       //   mon_component = {"x-small": true};
+        //       // }
+        //       this.geoJsonSource.data.features[i].properties.id = i;
+        //       this.geoJsonSource.data.features[i].properties.color = this.interpolate_colors(this.geoJsonSource.data.features[i].properties.mag);
+        //                                   // props: mon_component,
+        //                                   // location: .loc,
+        //                                   // mag: this.geoJsonSource.data.features[i].properties.mag,
+        //                                   // mag_unit: this.geoJsonSource.data.features[i].properties.magtype,
+        //                                   // time: this.geoJsonSource.data.features[i].properties.fechalocal,
+        //                                   // depth: (this.geoJsonSource.data.features[i].properties.depth ? this.geoJsonSource.data.features[i].properties.depth.concat(" km") : ""),
+        //                                   // color: this.interpolate_colors(parseFloat(this.geoJsonSource.data.features[i].properties.mag))
+        //                                   // });
+              
+        //     }
+        // })();
 
       },
       
@@ -518,16 +547,17 @@ export default {
               source: 'earthquakes',
               id: this.quakeID
           });
-        this.quakeID = quake_id;
+        this.quakeID = this.geoJsonSource.data.features.indexOf(this.all_features[quake_id]);
         this.map.setFeatureState({
               source: 'earthquakes',
-              id: quake_id
+              id: this.quakeID
             }, {
               hover: true
         });
+        this.geoJsonLabelsSource.data.features[0] = this.all_features[this.quake_id];
         
         this.map.flyTo({
-          center: this.geoJsonSource.data.features[quake_id].geometry.coordinates,
+          center: this.all_features[quake_id].geometry.coordinates,
           essential: true, // this animation is considered essential with respect to prefers-reduced-motion,
           zoom: 13
         });
