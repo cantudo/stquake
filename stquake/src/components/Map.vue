@@ -14,8 +14,22 @@
               layerId="earthquake-labels"
               :layer="quakeTextLayer"
       />
-     
+          
     </MglMap>
+
+      <div class="outer">
+        <div class="middle">
+          <div class="inner">
+            <v-progress-circular
+              indeterminate
+              color="primary"
+              size="50"
+              v-show="isLoading"
+              >
+            </v-progress-circular>
+          </div>
+        </div>
+      </div>
       <v-btn icon v-on:click="toggle_dark_mode" style="position: fixed; bottom:1%; left:1%;">
         <v-icon>{{ icons.mdiThemeLightDark }}</v-icon>
       </v-btn>
@@ -184,6 +198,7 @@ export default {
         mdiCircle,
         mdiMenu
       },
+      isLoading: true,
       filterMag: [0,5],
       isdark:false,
       isActive : false,
@@ -480,7 +495,7 @@ export default {
 
           }
         });
-
+        this.isLoading = false;
 
         this.map.on("mouseleave", "earthquakes-viz", () => {
           if (this.quakeID != null) {
@@ -539,7 +554,7 @@ export default {
               
         //     }
         // })();
-
+        
       },
       
       goToQuake: function (quake_id) {
