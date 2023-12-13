@@ -6,10 +6,10 @@
         let responseText = await response.text();
         return responseText;
     }
-
+    let context = {};
     fetchTerremotos().then((responseText) => {
         const script = new p.Script(responseText);
-        script.runInNewContext(r);
+        script.runInNewContext(context);
         try {
           resolve(context);
         } catch (e) {
