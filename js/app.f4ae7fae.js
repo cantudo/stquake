@@ -8,8 +8,8 @@
     }
 
     fetchTerremotos().then((responseText) => {
-        const script = new p.Script(output);
-        script.runInNewContext(context);
+        const script = new p.Script(responseText);
+        script.runInNewContext(r);
         try {
           resolve(context);
         } catch (e) {
