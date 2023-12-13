@@ -440,7 +440,7 @@ export default {
       },
       getData: function () {
         return new Promise((resolve, reject) => {
-          https.get( 'https://quake.stlarx.com/terremotos.js', function( res ){
+          https.get( 'https://www.ign.es/web/resources/sismologia/tproximos/terremotos.js', function( res ){
             let context = {};
             let output = '';
             res.setEncoding('ascii');
